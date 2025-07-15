@@ -85,7 +85,7 @@ class BookRecommendationAPIView(APIView):
 
         course_title = courses.first().course
         keyword = course_title.split()[-1]
-        print(f"🔎 Using course title for search: '{keyword}'")
+        
 
         page = int(request.query_params.get("page", 1))
         per_page = 5
@@ -100,7 +100,7 @@ class BookRecommendationAPIView(APIView):
             response = requests.get(gutendex_url, timeout=5)
             response.raise_for_status()
             books = response.json().get('results', [])
-            print(f"✅ Gutendex returned {len(books)} books")
+            
 
             for book in books[start:end]:
                 authors = ", ".join([a.get('name', 'Unknown') for a in book.get('authors', [])]) or "Unknown"
@@ -108,7 +108,8 @@ class BookRecommendationAPIView(APIView):
                 title = book.get('title', 'Untitled')
                 recommendations.append({"authors": authors, "image": image, "title": title})
         except requests.RequestException as e:
-            print("❌ Gutendex API Error:", e)
+            #print("❌ Gutendex API Error:", e)
+            pass
 
         # 🔹 OPENLIBRARY
         openlib_url = f"https://openlibrary.org/search.json?q={keyword}"
@@ -116,7 +117,7 @@ class BookRecommendationAPIView(APIView):
             response = requests.get(openlib_url, timeout=5)
             response.raise_for_status()
             books = response.json().get('docs', [])
-            print(f"✅ OpenLibrary returned {len(books)} books")
+            #print(f"✅ OpenLibrary returned {len(books)} books")
 
             for book in books[start:end]:
                 authors = ", ".join(book.get('author_name', ['Unknown']))
@@ -125,9 +126,10 @@ class BookRecommendationAPIView(APIView):
                 image = f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else ''
                 recommendations.append({"authors": authors, "image": image, "title": title})
         except requests.RequestException as e:
-            print("❌ OpenLibrary API Error:", e)
+            #print("❌ OpenLibrary API Error:", e)
+            pass
 
-        print(f"📦 Final recommendations count: {len(recommendations)}")
+        #print(f"📦 Final recommendations count: {len(recommendations)}")
         return Response(recommendations)
 
 
