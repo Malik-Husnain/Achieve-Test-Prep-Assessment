@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}My Progress{% endblock %}
+
+{% block content %}
+<h2 style="text-align:center;">My Course Progress</h2>
+{% if progress_list %}
+    <ul>
+        {% for progress in progress_list %}
+            <li>
+                <strong>{{ progress.course }}</strong> – {{ progress.progress }}%
+                <br>
+                <small>Last updated: {{ progress.last_updated }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No course progress found.</p>
+{% endif %}
+
+<hr>
+<h2 style="text-align:center;">Recommended Books</h2>
+<div id="recommendations">
+    <p>Loading recommendations...</p>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <button id="prevPageBtn" class="pagination-btn" disabled>⬅ Previous</button>
+    <button id="nextPageBtn" class="pagination-btn">Next ➡</button>
+</div>
+
+<script>
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.split("=")[1]);
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+let currentPage = 1;
+
+function loadRecommendations(page = 1) {
+    fetch(`/api/recommendations/?page=${page}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById("recommendations");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<p>No more recommendations found.</p>";
+                document.getElementById("nextPageBtn").disabled = true;
+                return;
+            }
+
+            data.forEach(book => {
+                const item = document.createElement("div");
+                item.style.marginBottom = "20px";
+                item.style.borderBottom = "1px solid #ccc";
+                item.style.paddingBottom = "10px";
+                item.innerHTML = `
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <img src="${book.image}" alt="${book.title}" width="80" height="120" style="object-fit: cover; border-radius: 4px;">
+                        <div>
+                            <h4 style="margin: 0;">${book.title}</h4>
+                            <p style="margin: 4px 0;"><em>${book.authors}</em></p>
+                            <button class="add-course-btn" data-title="${book.title}">➕ Add to My Courses</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            // Enable/disable pagination buttons
+            document.getElementById("prevPageBtn").disabled = page === 1;
+            document.getElementById("nextPageBtn").disabled = data.length < 5;
+
+            // Attach event listeners to new buttons
+            document.querySelectorAll(".add-course-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    const title = button.getAttribute("data-title");
+
+                    fetch("/api/progress/add/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCookie("csrftoken")
+                        },
+                        body: JSON.stringify({ title: title })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.message || "Added!");
+                        location.reload(); // Refresh course list
+                    })
+                    .catch(() => alert("Failed to add course."));
+                });
+            });
+        })
+        .catch(() => {
+            document.getElementById("recommendations").innerHTML = "<p>Failed to load recommendations.</p>";
+        });
+}
+
+// Pagination buttons
+document.getElementById("prevPageBtn").addEventListener("click", () => {
+    if (currentPage > 1) {
+        currentPage--;
+        loadRecommendations(currentPage);
+    }
+});
+
+document.getElementById("nextPageBtn").addEventListener("click", () => {
+    currentPage++;
+    loadRecommendations(currentPage);
+});
+
+// Initial load
+loadRecommendations(currentPage);
+</script>
+{% endblock %}

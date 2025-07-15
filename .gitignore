@@ -1,0 +1,25 @@
+# Virtual environment
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django migrations (except __init__.py if needed)
+**/migrations/
+!**/migrations/__init__.py
+
+# Environment variables
+.env
+
+# VSCode settings (optional)
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
