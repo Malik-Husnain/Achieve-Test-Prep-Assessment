@@ -58,6 +58,29 @@ Access the app at: `http://127.0.0.1:8000/`
 
 ---
 
+---
+
+## 👤 Creating Test Users for Login
+
+This project uses [Platzi Fake Store API](https://fakeapi.platzi.com/en/rest/auth-jwt/) for authentication, so there’s **no need to create local users**.
+
+### ✅ Sample Credentials for Login
+
+Use one of the following predefined test accounts of the Platzi Fake Store JWT API at the `/login/` route:
+
+| Username     | Password    |
+|--------------|-------------|
+| `mor_2314`   | `83r5^_`    |
+| `kminchelle` | `0lelplR`   |
+
+> 🔐 These users are authenticated against the Fake Store JWT API and work out of the box.
+
+After logging in:
+- You’ll be redirected to the `/progress/` page.
+- Your session will store a JWT and allow interaction with the rest of the system (progress tracking & recommendations).
+
+---
+
 ### 5️⃣ Run Unit Tests
 
 Run all tests in the project using:
